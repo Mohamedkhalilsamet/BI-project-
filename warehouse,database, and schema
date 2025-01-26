@@ -1,0 +1,51 @@
+CREATE WAREHOUSE IF NOT EXISTS SHOPIFY_WAREHOUSE
+WITH
+   WAREHOUSE_SIZE = 'XSMALL'
+   AUTO_SUSPEND = 60
+   AUTO_RESUME = TRUE;
+USE WAREHOUSE SHOPIFY_WAREHOUSE;
+CREATE DATABASE IF NOT EXISTS SHOPIFY_DATABASE;
+USE DATABASE SHOPIFY_DATABASE;
+CREATE SCHEMA IF NOT EXISTS SHOPIFY_SCHEMA;
+USE SCHEMA SHOPIFY_SCHEMA;
+create table IF NOT EXISTS PRODUCTS_DIM(
+   product_id varchar primary key,
+   product_name varchar not null,
+   category_name varchar not null
+);
+ALTER SESSION SET DATE_OUTPUT_FORMAT = 'MM-DD-YY';
+create table IF NOT EXISTS TIME_DIM(
+time_id varchar primary key,
+order_date date not null,
+isholiday varchar not null
+);
+create table IF NOT EXISTS LOCATION_DIM(
+location_id varchar primary key,
+customer_city varchar not null,
+customer_state varchar not null,
+customer_region varchar not null
+);
+create table IF NOT EXISTS CUSTOMER_DIM(
+customer_id varchar primary key,
+customer_first_name varchar not null,
+customer_last_name varchar not null, 
+customer_segment varchar not null, 
+Gender varchar not null,
+location_id varchar references LOCATION_DIM(location_id)
+);
+create table  IF NOT EXISTS SHIPMENT_DIM(
+ship_id varchar primary key,
+shipping_type varchar not null,
+delivery_status varchar not null
+);
+create table IF NOT EXISTS SALES_FACT(
+order_id varchar primary key,
+customer_id varchar references CUSTOMER_DIM(customer_id),
+time_id varchar references TIME_DIM(time_id),
+ship_id varchar references SHIPMENT_DIM(ship_id),
+product_id varchar references PRODUCTS_DIM(product_id),
+order_quantity int not null,
+sales_per_order numeric(10,2) not null,
+profit_per_order numeric(10,2) not null,
+order_item_discount numeric(10,2) not null
+);
